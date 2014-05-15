@@ -3,10 +3,6 @@ package com.atooma.spherobot;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.atooma.spherobot.commands.Command;
-import com.atooma.spherobot.commands.CommandListener;
-import com.atooma.spherobot.commands.CommandParser;
-
 import orbotix.robot.base.Robot;
 import orbotix.robot.base.RobotProvider;
 import orbotix.sphero.ConnectionListener;
@@ -14,7 +10,10 @@ import orbotix.sphero.DiscoveryListener;
 import orbotix.sphero.Sphero;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
+
+import com.atooma.spherobot.commands.Command;
+import com.atooma.spherobot.commands.CommandListener;
+import com.atooma.spherobot.commands.CommandParser;
 
 public class SpheroBot {
 	
@@ -121,12 +120,16 @@ public class SpheroBot {
 		commands.add(new Command("color", duration, arguments));
 	}
 	
+	public void reset() {
+		commands = new ArrayList<Command>();
+		currentCommand = 0;
+	}
+	
 	private void startBot() {
 		processCommand(commands.get(0));
 	}
 	
 	private void processCommand(final Command command) {
-		Log.e("CMD", "Command " + command.getCommand());
 		final Handler handler = new Handler();
 		CommandParser.parseAndExecute(mRobot, command);
         handler.postDelayed(new Runnable() {
@@ -134,8 +137,10 @@ public class SpheroBot {
             public void run() {
             	command.end();
             	currentCommand++;
-            	if(currentCommand >= commands.size())
+            	if(currentCommand >= commands.size()) {
+            		currentCommand = 0;
             		return;
+            	}
             	processCommand(commands.get(currentCommand));
             }
         }, command.getDuration());

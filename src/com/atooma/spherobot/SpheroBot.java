@@ -22,6 +22,7 @@ public class SpheroBot {
 	private int currentCommand = 0;
 	private Context ctx;
 	private String name;
+	private SpheroBotListener listener;
 	
 	public SpheroBot(Context ctx) {
 		this.ctx = ctx;
@@ -45,10 +46,15 @@ public class SpheroBot {
 			@Override
 			public void onConnectionFailed(SpheroBot sphero) {
 			}
+			
+			@Override
+			public void onStop(SpheroBot sphero) {
+			}
 		});
 	}
 	
-	public void start(final SpheroBotListener listener) {
+	public void start(final SpheroBotListener botListener) {
+		this.listener = botListener;
 		RobotProvider.getDefaultProvider().addConnectionListener(new ConnectionListener() {
 			@Override
 			public void onConnected(Robot sphero) {
@@ -139,6 +145,8 @@ public class SpheroBot {
             	currentCommand++;
             	if(currentCommand >= commands.size()) {
             		currentCommand = 0;
+            		if (listener != null)
+            			listener.onStop(SpheroBot.this);
             		return;
             	}
             	processCommand(commands.get(currentCommand));

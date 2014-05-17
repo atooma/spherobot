@@ -6,6 +6,9 @@ public class CommandParser {
 	
 	public static void parseAndExecute(Sphero robot, Command command) {
 		
+		if (robot == null)
+			return;
+		
 		String cmdName = command.getCommand();
 		
 		if (cmdName.equals("drive")) {

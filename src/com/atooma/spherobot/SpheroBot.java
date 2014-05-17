@@ -55,6 +55,8 @@ public class SpheroBot {
 	
 	public void start(final SpheroBotListener botListener) {
 		this.listener = botListener;
+		if (mRobot.isConnected())
+			return;
 		RobotProvider.getDefaultProvider().addConnectionListener(new ConnectionListener() {
 			@Override
 			public void onConnected(Robot sphero) {
@@ -124,6 +126,11 @@ public class SpheroBot {
 		arguments.add(g);
 		arguments.add(b);
 		commands.add(new Command("color", duration, arguments));
+	}
+	
+	public void disconnect() {
+		if (mRobot != null)
+			mRobot.disconnect();
 	}
 	
 	public void reset() {

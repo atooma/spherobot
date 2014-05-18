@@ -55,7 +55,7 @@ public class SpheroBot {
 	
 	public void start(final SpheroBotListener botListener) {
 		this.listener = botListener;
-		if (mRobot.isConnected())
+		if (mRobot != null && mRobot.isConnected())
 			return;
 		RobotProvider.getDefaultProvider().addConnectionListener(new ConnectionListener() {
 			@Override
@@ -91,8 +91,9 @@ public class SpheroBot {
 			public void onFound(List<Sphero> spheros) {
 				if(name != null) {
 					for (Sphero sphero : spheros) {
-						if (sphero.getName().equals(name))
+						if (sphero.getName().equals(name)) {
 							RobotProvider.getDefaultProvider().connect(sphero);
+						}
 					}
 				} else {
 					RobotProvider.getDefaultProvider().connect(spheros.iterator().next());

@@ -55,14 +55,16 @@ public class SpheroBot {
 	
 	public void start(final SpheroBotListener botListener) {
 		this.listener = botListener;
-		if (mRobot != null && mRobot.isConnected())
+		if (mRobot != null && mRobot.isConnected()) {
+			startBot();
 			return;
+		}
 		RobotProvider.getDefaultProvider().addConnectionListener(new ConnectionListener() {
 			@Override
 			public void onConnected(Robot sphero) {
 				mRobot = (Sphero) sphero;
-				startBot();
 				listener.onConnected(SpheroBot.this);
+				startBot();
 			}
 
 			@Override
@@ -103,10 +105,11 @@ public class SpheroBot {
 
 		boolean success = RobotProvider.getDefaultProvider().startDiscovery(ctx);
 		if (!success) {
+			listener.onConnectionFailed(SpheroBot.this);
 		}
 	}
 	
-	public void drive(float degrees, float speed, long duration) {
+	public synchronized void drive(float degrees, float speed, long duration) {
 		ArrayList<Object> arguments = new ArrayList<Object>();
 		arguments.add(degrees);
 		arguments.add(speed);
@@ -121,7 +124,7 @@ public class SpheroBot {
 		commands.add(command);
 	}
 	
-	public void setColor(int r, int g, int b, long duration) {
+	public synchronized void setColor(int r, int g, int b, long duration) {
 		ArrayList<Object> arguments = new ArrayList<Object>();
 		arguments.add(r);
 		arguments.add(g);
@@ -134,13 +137,14 @@ public class SpheroBot {
 			mRobot.disconnect();
 	}
 	
-	public void reset() {
-		commands = new ArrayList<Command>();
+	private void reset() {
+		commands.clear();
 		currentCommand = 0;
 	}
 	
-	private void startBot() {
+	private synchronized void startBot() {
 		processCommand(commands.get(0));
+		reset();
 	}
 	
 	private void processCommand(final Command command) {

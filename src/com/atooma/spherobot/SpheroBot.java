@@ -57,7 +57,7 @@ public class SpheroBot {
 	public synchronized void start(final SpheroBotListener botListener) {
 		isRunning = true;
 		this.listener = botListener;
-		if (mRobot != null && mRobot.isConnected()) {
+		if (mRobot != null) {
 			startBot();
 			return;
 		}
@@ -153,10 +153,34 @@ public class SpheroBot {
 		processCommand(commands.get(0));
 	}
 
-	private void processCommand(final Command command) {
-		final Handler handler = new Handler();
+	private synchronized void processCommand(final Command command) {
 		CommandParser.parseAndExecute(mRobot, command);
-		handler.postDelayed(new Runnable() {
+		Thread thread=  new Thread(){
+	        @Override
+	        public void run(){
+	            try {
+	                synchronized(this){
+	                    wait(command.getDuration());
+	                }
+	                command.end();
+					currentCommand++;
+					if (currentCommand >= commands.size()) {
+						reset();
+						isRunning = false;
+						if (listener != null)
+							listener.onStop(SpheroBot.this);
+						return;
+					}
+	            } catch(InterruptedException ex) {  
+	            	ex.printStackTrace();
+	            }
+
+	            // TODO              
+	        }
+	    };
+
+	    thread.start(); 
+		/*handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
 				command.end();
@@ -170,10 +194,10 @@ public class SpheroBot {
 				}
 				processCommand(commands.get(currentCommand));
 			}
-		}, command.getDuration());
+		}, command.getDuration());*/
 	}
 
-	public boolean isRunning() {
+	public synchronized boolean isRunning() {
 		return isRunning;
 	}
 	

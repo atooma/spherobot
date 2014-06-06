@@ -154,47 +154,40 @@ public class SpheroBot {
 	}
 
 	private synchronized void processCommand(final Command command) {
-		CommandParser.parseAndExecute(mRobot, command);
-		Thread thread=  new Thread(){
-	        @Override
-	        public void run(){
-	            try {
-	                synchronized(this){
-	                    wait(command.getDuration());
-	                }
-	                command.end();
-					currentCommand++;
-					if (currentCommand >= commands.size()) {
-						reset();
+		try {
+			CommandParser.parseAndExecute(mRobot, command);
+			Thread thread=  new Thread(){
+		        @Override
+		        public void run(){
+		            try {
+		                synchronized(this){
+		                    wait(command.getDuration());
+		                }
+		                command.end();
+						currentCommand++;
+						if (currentCommand >= commands.size()) {
+							reset();
+							isRunning = false;
+							if (listener != null)
+								listener.onStop(SpheroBot.this);
+							return;
+						}
+		            } catch(InterruptedException ex) {  
+		            	ex.printStackTrace();
+		            } catch(Exception ex) {
+		    			ex.printStackTrace();
+		    			reset();
 						isRunning = false;
-						if (listener != null)
-							listener.onStop(SpheroBot.this);
-						return;
-					}
-	            } catch(InterruptedException ex) {  
-	            	ex.printStackTrace();
-	            }
-
-	            // TODO              
-	        }
-	    };
-
-	    thread.start(); 
-		/*handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				command.end();
-				currentCommand++;
-				if (currentCommand >= commands.size()) {
-					reset();
-					isRunning = false;
-					if (listener != null)
-						listener.onStop(SpheroBot.this);
-					return;
-				}
-				processCommand(commands.get(currentCommand));
-			}
-		}, command.getDuration());*/
+		    		}
+		        }
+		    };
+	
+		    thread.start(); 
+		} catch(Exception ex) {
+			ex.printStackTrace();
+			reset();
+			isRunning = false;
+		}
 	}
 
 	public synchronized boolean isRunning() {
